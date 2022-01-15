@@ -5,7 +5,11 @@ variable "location" {
 }
 
 variable "public_ip" {
- 
+ type = object({
+    name = string
+    allocation_method = string
+    sku = string
+  })
 
   default = {
       name              = "pip1"
@@ -23,11 +27,17 @@ variable "nsg" {
 }
 
 variable "machine_details" {
-  
+  type = object({
+    name = string
+    size = string
+    username = string
+    password = string
+  })
+
   default = {
-      name             = "example-vm2"
-      size = "Standard_E2s_v3" #"Standard_F2"
-      username               = "adminuser"
+      name = "example-vm"
+      size = "Standard_F2"
+      username  = "adminuser"
       password = "Notallowed1!"
     }
   
