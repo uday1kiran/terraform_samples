@@ -5,7 +5,7 @@ resource "aws_redshiftserverless_namespace" "example" {
   admin_user_password = "Admin123"
   db_name             = "dbname"
   ##default_iam_role_arn = 
-  iam_roles = ["${aws_iam_role.redshift_role.arn}"]
+  ##iam_roles = ["${aws_iam_role.redshift_role.arn}"]
 }
 
 resource "aws_redshiftserverless_workgroup" "example" {
@@ -18,17 +18,27 @@ resource "aws_redshiftserverless_workgroup" "example" {
   security_group_ids   = [aws_security_group.redshift_security_group.id]
   #subnet_ids           = [aws_redshift_subnet_group.redshift_subnet_group.id]
   subnet_ids = [aws_subnet.redshift_subnet_1.id, aws_subnet.redshift_subnet_2.id, aws_subnet.redshift_subnet_3.id]
+  tags = {
 
+    Name = "redshift-vpc"
+
+  }
 }
 
-resource "aws_redshiftserverless_endpoint_access" "example" {
-  endpoint_name  = "example"
-  workgroup_name = aws_redshiftserverless_workgroup.example.workgroup_name
-
-  #optional
-  vpc_security_group_ids = [aws_security_group.redshift_security_group.id]
-  #subnet_ids             = [aws_redshift_subnet_group.redshift_subnet_group.id]
-  subnet_ids = [aws_subnet.redshift_subnet_1.id, aws_subnet.redshift_subnet_2.id, aws_subnet.redshift_subnet_3.id]
+resource "aws_ec2_tag" "example" {
+  resource_id = aws_redshiftserverless_workgroup.example.endpoint[0].vpc_endpoint[0].vpc_endpoint_id
+  key         = "Name"
+  value       = "vpc testing tag"
+}
+resource "aws_ec2_tag" "example1" {
+  resource_id = aws_redshiftserverless_workgroup.example.endpoint[0].vpc_endpoint[0].vpc_endpoint_id
+  key         = "Name1"
+  value       = "vpc testing tag"
+}
+resource "aws_ec2_tag" "example2" {
+  resource_id = aws_redshiftserverless_workgroup.example.endpoint[0].vpc_endpoint[0].vpc_endpoint_id
+  key         = "Name2"
+  value       = "vpc testing tag"
 }
 
 resource "aws_vpc" "redshift_vpc" {
@@ -157,113 +167,4 @@ resource "aws_subnet" "redshift_subnet_3" {
 
   ]
 }
-# resource "aws_redshift_subnet_group" "redshift_subnet_group" {
 
-#   name = "subnet-group"
-
-#   subnet_ids = ["${aws_subnet.redshift_subnet_1.id}",
-
-#     "${aws_subnet.redshift_subnet_2.id}",
-#     "${aws_subnet.redshift_subnet_3.id}"
-#   ]
-
-#   tags = {
-
-#     environment = "dev"
-
-#     Name = "subnet-group"
-
-#   }
-
-# }
-resource "aws_iam_role_policy" "s3_full_access_policy" {
-  name   = "redshift_s3_policy"
-  role   = aws_iam_role.redshift_role.id
-  policy = <<EOF
-{
-   "Version": "2012-10-17",
-   "Statement": [
-       {
-           "Effect": "Allow",
-           "Action": "s3:*",
-           "Resource": "*"
-       }
-   ]
-}
-EOF
-}
-resource "aws_iam_role" "redshift_role" {
-
-  name = "redshift_role"
-
-  assume_role_policy = <<EOF
-
-{
-
- "Version": "2012-10-17",
-
- "Statement": [
-
-   {
-
-     "Action": "sts:AssumeRole",
-
-     "Principal": {
-
-       "Service": "redshift.amazonaws.com"
-
-     },
-
-     "Effect": "Allow",
-
-     "Sid": ""
-
-   }
-
- ]
-
-}
-
-EOF
-
-  tags = {
-
-    tag-key = "redshift-role"
-
-  }
-
-}
-
-# resource "aws_redshift_cluster" "default" {
-
-#   cluster_identifier = var.rs_cluster_identifier
-
-#   database_name = var.rs_database_name
-
-#   master_username = var.rs_master_username
-
-#   master_password = var.rs_master_pass
-
-#   node_type = var.rs_nodetype
-
-#   cluster_type = var.rs_cluster_type
-
-#   cluster_subnet_group_name = aws_redshift_subnet_group.redshift_subnet_group.id
-
-#   skip_final_snapshot = true
-
-#   iam_roles = ["${aws_iam_role.redshift_role.arn}"]
-
-#   depends_on = [
-
-#     "aws_vpc.redshift_vpc",
-
-#     "aws_security_group.redshift_security_group",
-
-#     "aws_redshift_subnet_group.redshift_subnet_group",
-
-#     "aws_iam_role.redshift_role"
-
-#   ]
-
-# }
