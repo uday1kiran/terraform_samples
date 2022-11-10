@@ -23,7 +23,10 @@ resource "aws_redshiftserverless_workgroup" "example" {
     Name = "redshift-vpc"
 
   }
+
 }
+
+data "aws_default_tags" "example" {}
 
 resource "aws_ec2_tag" "example" {
   resource_id = aws_redshiftserverless_workgroup.example.endpoint[0].vpc_endpoint[0].vpc_endpoint_id
@@ -36,9 +39,15 @@ resource "aws_ec2_tag" "example1" {
   value       = "vpc testing tag"
 }
 resource "aws_ec2_tag" "example2" {
+
+
+  for_each = data.aws_default_tags.example.tags ##{ "Name" : "MyAttachment", "Owner" : "Operations" }
+
   resource_id = aws_redshiftserverless_workgroup.example.endpoint[0].vpc_endpoint[0].vpc_endpoint_id
-  key         = "Name2"
-  value       = "vpc testing tag"
+  key         = each.key
+  value       = each.value
+
+
 }
 
 resource "aws_vpc" "redshift_vpc" {
